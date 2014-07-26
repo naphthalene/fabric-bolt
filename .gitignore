@@ -63,3 +63,9 @@ worthwhile_fabfile.py
 core.db
 .repo_caches
 .django_cache
+
+# Build artifacts #
+###################
+build
+dist
+fabric_bolt.egg-info
