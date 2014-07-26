@@ -3,7 +3,8 @@ from django.conf.urls import patterns, url
 from fabric_bolt.projects import views
 
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    '',
     url(r'^$', views.ProjectList.as_view(), name='projects_project_list'),
 
     url(r'^create/$', views.ProjectCreate.as_view(), name='projects_project_create'),
@@ -17,7 +18,7 @@ urlpatterns = patterns('',
     url(r'^configuration/update/(?P<pk>\w+)/$', views.ProjectConfigurationUpdate.as_view(), name='projects_configuration_update'),
     url(r'^configuration/delete/(?P<pk>\w+)/$', views.ProjectConfigurationDelete.as_view(), name='projects_configuration_delete'),
 
-    url(r'^stage/(?P<pk>\d+)/deployment/(?P<task_name>\w+)/$', views.DeploymentCreate.as_view(), name='projects_deployment_create'),
+    url(r'^stage/(?P<pk>\d+)/deployment/(?P<task_name>[\w\.]+)/$', views.DeploymentCreate.as_view(), name='projects_deployment_create'),
     url(r'^deployment/view/(?P<pk>\d+)', views.DeploymentDetail.as_view(), name='projects_deployment_detail'),
     url(r'^deployment/output/(?P<pk>\d+)', views.DeploymentOutputStream.as_view(), name='projects_deployment_output'),
 
