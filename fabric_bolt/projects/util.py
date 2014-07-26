@@ -38,17 +38,13 @@ def update_project_git(project, cache_dir, repo_dir):
         )
 
 
-def setup_virtual_env_if_needed(repo_dir):
-    env_dir = os.path.join(repo_dir, 'env')
-    if not os.path.exists(env_dir):
-        os.makedirs(env_dir)
-        create_environment(env_dir)
-
-
-def update_project_requirements(project, repo_dir, activate_loc):
+def update_project_requirements(project, repo_dir):
     pip_installs = ' '.join(project.fabfile_requirements.splitlines())
 
-    check_output_with_ssh_key('source {} && cd {};pip install {}'.format(activate_loc, repo_dir, pip_installs))
+    return subprocess.check_output(
+        'cd {};pip install {}'.format(repo_dir, pip_installs),
+        shell=True
+    )
 
 
 def get_fabfile_path(project):
@@ -63,12 +59,10 @@ def get_fabfile_path(project):
         repo_dir = os.path.join(cache_dir, slugify(project.name))
 
         update_project_git(project, cache_dir, repo_dir)
-        setup_virtual_env_if_needed(repo_dir)
-        activate_loc = os.path.join(repo_dir, 'env', 'bin', 'activate')
 
-        update_project_requirements(project, repo_dir, activate_loc)
+        update_project_requirements(project, repo_dir)
 
-        result = os.path.join(repo_dir, 'fabfile.py'), activate_loc
+        result = os.path.join(repo_dir, 'fabfile.py')
         cache.set(cache_key, result, settings.FABRIC_TASK_CACHE_TIMEOUT)
         return result
     else:
@@ -111,33 +105,24 @@ def get_fabric_tasks(project):
         return cached_result
 
     try:
-        fabfile_path, activate_loc = get_fabfile_path(project)
+        fabfile_path = get_fabfile_path(project)
 
-        if activate_loc:
-            output = subprocess.check_output('source {};fab --list --list-format=short --fabfile={}'.format(activate_loc, fabfile_path), shell=True)
-        else:
-            output = subprocess.check_output(['fab', '--list', '--list-format=short', '--fabfile={}'.format(fabfile_path)])
+        output = subprocess.check_output(['fab', '--list', '--list-format=short', '--fabfile={}'.format(fabfile_path)])
 
         lines = output.splitlines()
         tasks = []
         for line in lines:
             name = line.strip()
-            if activate_loc:
-                o = subprocess.check_output(
-                    'source {};fab --display={} --fabfile={}'.format(activate_loc, name, fabfile_path),
-                    shell=True
-                )
-            else:
-                o = subprocess.check_output(
-                    ['fab', '--display={}'.format(name), '--fabfile={}'.format(fabfile_path)]
-                )
+            o = subprocess.check_output(
+                ['fab', '--display={}'.format(name), '--fabfile={}'.format(fabfile_path)]
+            )
 
             tasks.append(parse_task_details(name, o))
 
         cache.set(cache_key, tasks, settings.FABRIC_TASK_CACHE_TIMEOUT)
     except Exception as e:
+        print e
         tasks = []
-
     return tasks
 
 
@@ -236,10 +221,7 @@ def build_command(deployment, session, abort_on_prompts=True):
     if hosts:
         command += ' --hosts=' + ','.join(hosts)
 
-    fabfile_path, active_loc = get_fabfile_path(deployment.stage.project)
+    fabfile_path = get_fabfile_path(deployment.stage.project)
     command += ' --fabfile={}'.format(fabfile_path)
 
-    if active_loc:
-        return 'source {};'.format(active_loc) + ' ' + command
-    else:
-        return command
+    return command

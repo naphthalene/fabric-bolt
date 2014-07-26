@@ -18,7 +18,7 @@ from django.core.cache import cache
 
 from django_tables2 import RequestConfig, SingleTableView
 
-from fabric_bolt.core.mixins.views import MultipleGroupRequiredMixin
+# from fabric_bolt.core.mixins.views import MultipleGroupRequiredMixin
 from fabric_bolt.hosts.models import Host
 from fabric_bolt.projects import forms, tables, models
 from fabric_bolt.projects.util import get_fabric_tasks, build_command, get_task_details
@@ -48,7 +48,7 @@ class ProjectList(SingleTableView):
     queryset = models.Project.active_records.all()
 
 
-class ProjectCreate(MultipleGroupRequiredMixin, CreateView):
+class ProjectCreate(CreateView):
     """
     Create a new project
     """
@@ -102,7 +102,7 @@ class ProjectDetail(DetailView):
         return context
 
 
-class ProjectUpdate(MultipleGroupRequiredMixin, UpdateView):
+class ProjectUpdate(UpdateView):
     """
     Update a project
     """
@@ -113,7 +113,7 @@ class ProjectUpdate(MultipleGroupRequiredMixin, UpdateView):
     success_url = reverse_lazy('projects_project_list')
 
 
-class ProjectDelete(MultipleGroupRequiredMixin, DeleteView):
+class ProjectDelete(DeleteView):
     """
     Deletes a project by setting the Project's date_deleted. We save projects for historical tracking.
     """
@@ -129,7 +129,7 @@ class ProjectDelete(MultipleGroupRequiredMixin, DeleteView):
         return HttpResponseRedirect(reverse('projects_project_list'))
 
 
-class ProjectConfigurationCreate(MultipleGroupRequiredMixin, BaseGetProjectCreateView):
+class ProjectConfigurationCreate(BaseGetProjectCreateView):
     """
     Create a Project Configuration. These are used to set the Fabric env object for a task.
     """
@@ -164,7 +164,7 @@ class ProjectConfigurationCreate(MultipleGroupRequiredMixin, BaseGetProjectCreat
         return success_url
 
 
-class ProjectConfigurationUpdate(MultipleGroupRequiredMixin, UpdateView):
+class ProjectConfigurationUpdate(UpdateView):
     """
     Update a Project Configuration
     """
@@ -174,7 +174,7 @@ class ProjectConfigurationUpdate(MultipleGroupRequiredMixin, UpdateView):
     form_class = forms.ConfigurationUpdateForm
 
 
-class ProjectConfigurationDelete(MultipleGroupRequiredMixin, DeleteView):
+class ProjectConfigurationDelete(DeleteView):
     """
     Delete a project configuration from a project
     """
@@ -207,7 +207,7 @@ class ProjectConfigurationDelete(MultipleGroupRequiredMixin, DeleteView):
         return super(ProjectConfigurationDelete, self).delete(self, request, *args, **kwargs)
 
 
-class DeploymentCreate(MultipleGroupRequiredMixin, CreateView):
+class DeploymentCreate(CreateView):
     """
     Form to create a new Deployment for a Project Stage. POST will kick off the DeploymentOutputStream view.
     """
@@ -252,7 +252,7 @@ class DeploymentCreate(MultipleGroupRequiredMixin, CreateView):
                 field = CharField()
 
                 if config.sensitive_value:
-                    field.widget = PasswordInput
+                    field.widget = PasswordInput(attrs={'class' : 'password'})
 
                 if config.task_argument:
                     field.label = 'Argument value for ' + config.key
@@ -360,7 +360,7 @@ class DeploymentOutputStream(View):
         return resp
 
 
-class ProjectStageCreate(MultipleGroupRequiredMixin, BaseGetProjectCreateView):
+class ProjectStageCreate(BaseGetProjectCreateView):
     """
     Create/Add a Stage to a Project
     """
@@ -382,7 +382,7 @@ class ProjectStageCreate(MultipleGroupRequiredMixin, BaseGetProjectCreateView):
         return super(ProjectStageCreate, self).form_valid(form)
 
 
-class ProjectStageUpdate(MultipleGroupRequiredMixin, UpdateView):
+class ProjectStageUpdate(UpdateView):
     """
     Project Stage Update form
     """
@@ -443,7 +443,7 @@ class ProjectStageTasksAjax(DetailView):
         return context
 
 
-class ProjectStageDelete(MultipleGroupRequiredMixin, DeleteView):
+class ProjectStageDelete(DeleteView):
     """
     Delete a project stage
     """
@@ -459,7 +459,7 @@ class ProjectStageDelete(MultipleGroupRequiredMixin, DeleteView):
         return HttpResponseRedirect(reverse('projects_project_view', args=(self.object.project.pk,)))
 
 
-class ProjectStageMapHost(MultipleGroupRequiredMixin, RedirectView):
+class ProjectStageMapHost(RedirectView):
     """
     Map a Project Stage to a Host
     """
@@ -480,7 +480,7 @@ class ProjectStageMapHost(MultipleGroupRequiredMixin, RedirectView):
         return reverse('projects_stage_view', args=(self.project_id, self.stage_id,))
 
 
-class ProjectStageUnmapHost(MultipleGroupRequiredMixin, RedirectView):
+class ProjectStageUnmapHost(RedirectView):
     """
     Unmap a Project Stage from a Host (deletes the Stage->Host through table record)
     """

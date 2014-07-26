@@ -8,18 +8,18 @@ from fabric_bolt.core.mixins.views import MultipleGroupRequiredMixin, GroupRequi
 from fabric_bolt.hosts import models, tables, forms
 
 
-class HostList(MultipleGroupRequiredMixin, SingleTableView):
+class HostList(SingleTableView):
     group_required = ['Admin', 'Deployer', ]
     table_class = tables.HostTable
     model = models.Host
 
 
-class HostDetail(MultipleGroupRequiredMixin, DetailView):
+class HostDetail(DetailView):
     group_required = ['Admin', 'Deployer', ]
     model = models.Host
 
 
-class HostCreate(MultipleGroupRequiredMixin, CreateView):
+class HostCreate(CreateView):
     """View for creating a host. Hosts let us know where we can shovel code to."""
     group_required = ['Admin', 'Deployer', ]
     model = models.Host
