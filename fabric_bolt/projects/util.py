@@ -113,11 +113,11 @@ def get_fabric_tasks(project):
         tasks = []
         for line in lines:
             name = line.strip()
-            o = subprocess.check_output(
-                ['fab', '--display={}'.format(name), '--fabfile={}'.format(fabfile_path)]
-            )
+            # o = subprocess.check_output(
+            #     ['fab', '--display={}'.format(name), '--fabfile={}'.format(fabfile_path)]
+            # )
 
-            tasks.append(parse_task_details(name, o))
+            tasks.append(name)
 
         cache.set(cache_key, tasks, settings.FABRIC_TASK_CACHE_TIMEOUT)
     except Exception as e:
@@ -128,7 +128,7 @@ def get_fabric_tasks(project):
 
 def get_task_details(project, task_name):
     for details in get_fabric_tasks(project):
-        if details[0] == task_name:
+        if details == task_name:
             return details
 
     return None

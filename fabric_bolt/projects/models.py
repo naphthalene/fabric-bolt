@@ -251,7 +251,7 @@ class Deployment(TrackingFields):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     stage = models.ForeignKey(Stage)
-    comments = models.TextField()
+    comments = models.TextField(blank=True)
     status = models.CharField(choices=STATUS, max_length=10, default=PENDING)
     output = models.TextField(null=True, blank=True)
     task = models.ForeignKey('projects.Task')
