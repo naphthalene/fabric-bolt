@@ -225,8 +225,8 @@ class DeploymentCreate(CreateView):
             messages.error(self.request, '"{}" is not a valid task.'. format(self.kwargs['task_name']))
             return HttpResponseRedirect(reverse('projects_stage_view', kwargs={'project_id': self.stage.project_id, 'pk': self.stage.pk }))
 
-        self.task_name = task_details[0]
-        self.task_description = task_details[1]
+        self.task_name = task_details
+        self.task_description = "Not available at this time (for speed)"
 
         return super(DeploymentCreate, self).dispatch(request, *args, **kwargs)
 
