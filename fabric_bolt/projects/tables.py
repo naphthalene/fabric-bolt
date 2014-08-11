@@ -171,7 +171,6 @@ class StageRoleTable(PaginateTable):
     class Meta:
         model = Role
         attrs = {"class": "table table-striped"}
-        exclude = ('id',)
         sequence = fields = (
             'name',
             'actions'

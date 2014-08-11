@@ -296,6 +296,7 @@ class DeploymentCreate(CreateView):
         context['stage'] = self.stage
         context['task_name'] = self.task_name
         context['task_description'] = self.task_description
+
         return context
 
     def get_success_url(self):
@@ -407,7 +408,7 @@ class ProjectStageView(DetailView):
         # Hosts Table (Stage->Host Through table)
         stage_hosts = self.object.hosts.all()
 
-        # Hosts Table (Stage->Host Through table)
+        # Roles Table (Stage->Host Through table)
         stage_roles = self.object.roles.all()
 
         host_table = tables.StageHostTable(stage_hosts, stage_id=self.object.pk)  # Through table
@@ -501,7 +502,7 @@ class ProjectStageMapRole(RedirectView):
         role_name = kwargs.get('role_name')
 
         stage = models.Stage.objects.get(pk=self.stage_id)
-        stage.roles.add(Role.objects.get(pk=role_name))
+        stage.roles.add(Role.objects.get(name=role_name))
 
         return super(ProjectStageMapRole, self).get(request, *args, **kwargs)
 
@@ -541,7 +542,7 @@ class ProjectStageUnmapRole(RedirectView):
         role_name = kwargs.get('role_name')
 
         self.stage = models.Stage.objects.get(pk=self.stage_id)
-        role = Role.objects.get(pk=role_name)
+        role = Role.objects.get(name=role_name)
         self.stage.roles.remove(role)
 
         return super(ProjectStageUnmapRole, self).get(request, *args, **kwargs)
