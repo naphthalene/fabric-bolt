@@ -20,6 +20,7 @@ from django_tables2 import RequestConfig, SingleTableView
 
 # from fabric_bolt.core.mixins.views import MultipleGroupRequiredMixin
 from fabric_bolt.hosts.models import Host
+from fabric_bolt.roles.models import Role
 from fabric_bolt.projects import forms, tables, models
 from fabric_bolt.projects.util import get_fabric_tasks, build_command, get_task_details
 
@@ -406,11 +407,20 @@ class ProjectStageView(DetailView):
         # Hosts Table (Stage->Host Through table)
         stage_hosts = self.object.hosts.all()
 
+        # Hosts Table (Stage->Host Through table)
+        stage_roles = self.object.roles.all()
+
         host_table = tables.StageHostTable(stage_hosts, stage_id=self.object.pk)  # Through table
         RequestConfig(self.request).configure(host_table)
         context['hosts'] = host_table
 
+        role_table = tables.StageRoleTable(stage_roles, stage_id=self.object.pk)  # Through table
+        RequestConfig(self.request).configure(role_table)
+        context['roles'] = role_table
+
         context['available_hosts'] = Host.objects.exclude(id__in=[host.pk for host in stage_hosts]).all()
+
+        context['available_roles'] = Host.objects.exclude(id__in=[role.name for host in stage_roles]).all()
 
         # Configuration Table
         configuration_table = tables.ConfigurationTable(self.object.stage_configurations())
@@ -478,6 +488,26 @@ class ProjectStageMapHost(RedirectView):
     def get_redirect_url(self, **kwargs):
         return reverse('projects_stage_view', args=(self.project_id, self.stage_id,))
 
+class ProjectStageMapRole(RedirectView):
+    """
+    Map a Project Stage to a Role
+    """
+    group_required = ['Admin',]
+    permanent = False
+
+    def get(self, request, *args, **kwargs):
+        self.project_id = kwargs.get('project_id')
+        self.stage_id = kwargs.get('pk')
+        role_name = kwargs.get('role_name')
+
+        stage = models.Stage.objects.get(pk=self.stage_id)
+        stage.roles.add(Role.objects.get(pk=role_name))
+
+        return super(ProjectStageMapRole, self).get(request, *args, **kwargs)
+
+    def get_redirect_url(self, **kwargs):
+        return reverse('projects_stage_view', args=(self.project_id, self.stage_id,))
+
 
 class ProjectStageUnmapHost(RedirectView):
     """
@@ -495,6 +525,26 @@ class ProjectStageUnmapHost(RedirectView):
         self.stage.hosts.remove(host)
 
         return super(ProjectStageUnmapHost, self).get(request, *args, **kwargs)
+
+    def get_redirect_url(self, **kwargs):
+        return reverse('projects_stage_view', args=(self.stage.project.pk, self.stage_id,))
+
+class ProjectStageUnmapRole(RedirectView):
+    """
+    Unmap a Project Stage from a Role (deletes the Stage->Role through table record)
+    """
+    group_required = ['Admin', ]
+    permanent = False
+
+    def get(self, request, *args, **kwargs):
+        self.stage_id = kwargs.get('pk')
+        role_name = kwargs.get('role_name')
+
+        self.stage = models.Stage.objects.get(pk=self.stage_id)
+        role = Role.objects.get(pk=role_name)
+        self.stage.roles.remove(role)
+
+        return super(ProjectStageUnmapRole, self).get(request, *args, **kwargs)
 
     def get_redirect_url(self, **kwargs):
         return reverse('projects_stage_view', args=(self.stage.project.pk, self.stage_id,))

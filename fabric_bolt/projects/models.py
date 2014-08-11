@@ -62,6 +62,8 @@ class Stage(TrackingFields):
     name = models.CharField(max_length=255)
     hosts = models.ManyToManyField('hosts.Host')
 
+    roles = models.ManyToManyField('roles.Role')
+
     # Managers
     objects = models.Manager()
     active_records = ActiveManager()

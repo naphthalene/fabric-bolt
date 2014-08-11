@@ -217,6 +217,10 @@ def build_command(deployment, session, abort_on_prompts=True):
     if abort_on_prompts:
         command += ' --abort-on-prompts'
 
+    roles = deployment.stage.roles.values_list('name', flat=True)
+    if roles:
+        command += ' --roles=' + ','.join(roles)
+
     hosts = deployment.stage.hosts.values_list('name', flat=True)
     if hosts:
         command += ' --hosts=' + ','.join(hosts)
