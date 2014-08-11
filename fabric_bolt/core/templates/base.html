@@ -39,7 +39,7 @@
                             <div class="panel-heading"><a href="{% url 'roles_role_list' %}">Roles</a></div>
                             <div class="panel-body">
                                 {% for role in sidebar_roles %}
-                                    <a href="{% url 'roles_role_detail' role.pk %}">{{ role }}</a><br/>
+                                    <a href="{% url 'roles_role_detail' role.pk %}">{{ role.name }}</a><br/>
                                 {% empty %}
                                     No Roles<br/>
                                 {% endfor %}

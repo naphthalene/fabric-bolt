@@ -420,7 +420,7 @@ class ProjectStageView(DetailView):
 
         context['available_hosts'] = Host.objects.exclude(id__in=[host.pk for host in stage_hosts]).all()
 
-        context['available_roles'] = Host.objects.exclude(id__in=[role.name for host in stage_roles]).all()
+        context['available_roles'] = Role.objects.exclude(name__in=[role.name for role in stage_roles]).all()
 
         # Configuration Table
         configuration_table = tables.ConfigurationTable(self.object.stage_configurations())

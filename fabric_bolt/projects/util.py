@@ -194,8 +194,13 @@ def build_command(deployment, session, abort_on_prompts=True):
     # Special ones get set a different way
     special_task_configs = list(set(task_configs) & set(command_to_config.keys()))
 
-    command = 'fab ' + deployment.task.name
+    command = 'fab '
 
+    roles = deployment.stage.roles.values_list('name', flat=True)
+    if roles:
+        command += (' t:' + ','.join(roles) + ' ')
+
+    command += deployment.task.name
     if task_args:
         key_value_strings = []
         for key in task_args:
@@ -216,10 +221,6 @@ def build_command(deployment, session, abort_on_prompts=True):
 
     if abort_on_prompts:
         command += ' --abort-on-prompts'
-
-    roles = deployment.stage.roles.values_list('name', flat=True)
-    if roles:
-        command += ' --roles=' + ','.join(roles)
 
     hosts = deployment.stage.hosts.values_list('name', flat=True)
     if hosts:
