@@ -21,6 +21,7 @@ $(function(){
           $('#status_section .glyphicon').attr('class', '').addClass('glyphicon').addClass('glyphicon-ok').addClass('text-success');
         }else if(data.status == 'aborted') {
           $('#status_section legend').html('Status: Aborted!');
+          $('#deployment_abort').hide();
           $('#status_section .glyphicon').attr('class', '').addClass('glyphicon').addClass('glyphicon-warning-sign').addClass('text-warning');
         }
       }
