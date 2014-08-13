@@ -237,6 +237,8 @@ class DeploymentCreate(CreateView):
 
         form = form_class(**self.get_form_kwargs())
 
+        used_arg_names = []
+
         # We want to inject fields into the form for the configurations they've marked as prompt
         for config in stage_configurations:
             if config.task_argument and config.task_name != self.task_name:
@@ -256,6 +258,7 @@ class DeploymentCreate(CreateView):
                     field.widget = PasswordInput(attrs={'class' : 'password'})
 
                 if config.task_argument:
+                    used_arg_names.append(config.key)
                     field.label = 'Argument value for ' + config.key
 
             form.fields[str_config_key] = field
@@ -314,19 +317,6 @@ class DeploymentDetail(DetailView):
             return ['projects/deployment_detail_socketio.html']
         else:
             return ['projects/deployment_detail.html']
-
-# class DeploymentAbort(RedirectView):
-#     """
-#     Abort a deployment
-#     """
-#     permanent = False
-
-#     def get(self, request, *args, **kwargs):
-#         self.deployment_id = int(kwargs.get('pk'))
-#         self.deployment = get_object_or_404(models.Stage, pk=deployment_id)
-
-#         ## TODO lookup the 
-#         return super(DeploymentAbort, self).get(request, *args, **kwargs)
 
 
 class DeploymentOutputStream(View):

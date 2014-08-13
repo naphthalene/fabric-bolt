@@ -71,8 +71,8 @@ def get_fabfile_path(project):
 
 def parse_task_details(name, task_output):
     lines = task_output.splitlines()
-    docstring = lines[2].strip()
-    arguments_line = lines[3].strip()
+    docstring = '\n'.join([line.strip() for line in lines[2:-2]]).strip()
+    arguments_line = lines[-2].strip()
 
     if docstring == 'No docstring provided':
         docstring = None
@@ -83,15 +83,18 @@ def parse_task_details(name, task_output):
 
     if arguments_line:
         for arg in arguments_line.split(', '):
-            m = re.match(r"^([^=]+)(='([^']*)')?$", arg)
+            m = re.match(r"^([^=]+)(=(\'?)([^']*)\3)?$", arg)
 
-            if m.group(2):
-                arguments.append((m.group(1), m.group(3)))
+            if m.group(2): # found argument with default value
+                if m.group(3) == "'": # default value is a string
+                    arguments.append((m.group(1), m.group(4)))
+                else:
+                    # found an argument with some other default value.
+                    # all fab arguments are translated to strings, so this doesnt make sense. Ignore the default.
+                    arguments.append(m.group(1))
             else:
                 arguments.append(m.group(1))
-
     return name, docstring, arguments
-
 
 def get_fabric_tasks(project):
     """
@@ -113,22 +116,23 @@ def get_fabric_tasks(project):
         tasks = []
         for line in lines:
             name = line.strip()
-            # o = subprocess.check_output(
-            #     ['fab', '--display={}'.format(name), '--fabfile={}'.format(fabfile_path)]
-            # )
+            o = subprocess.check_output(
+                ['fab', '--display={}'.format(name), '--fabfile={}'.format(fabfile_path)]
+            )
 
-            tasks.append(name)
+            tasks.append(parse_task_details(name, o))
 
         cache.set(cache_key, tasks, settings.FABRIC_TASK_CACHE_TIMEOUT)
     except Exception as e:
         print e
         tasks = []
+
     return tasks
 
 
 def get_task_details(project, task_name):
     for details in get_fabric_tasks(project):
-        if details == task_name:
+        if details[0] == task_name:
             return details
 
     return None
@@ -174,14 +178,17 @@ def update_config_values_from_session(configs, session):
     for key, config in configs.iteritems():
         if session.get('configuration_values', {}).get(key, None) is not None:
             config.set_value(session['configuration_values'][key])
+            del session['configuration_values'][key]
 
-    return configs
+    arg_values = session.get('configuration_values', {})
+
+    return configs, arg_values
 
 
 def build_command(deployment, session, abort_on_prompts=True):
     # Get the dictionary of configurations for this stage
     configs = deployment.stage.get_configurations()
-    configs = update_config_values_from_session(configs, session)
+    configs, arg_values = update_config_values_from_session(configs, session)
 
     task_args = [key for key, config in configs.iteritems() if config.task_argument and config.task_name == deployment.task.name]
     task_configs = [key for key, config in configs.iteritems() if not config.task_argument]
@@ -196,6 +203,8 @@ def build_command(deployment, session, abort_on_prompts=True):
 
     command = 'fab '
 
+    task_details = get_task_details(deployment.stage.project, deployment.task.name)
+
     roles = deployment.stage.roles.values_list('name', flat=True)
     if roles:
         command += (' t:' + ','.join(roles) + ' ')
@@ -203,13 +212,26 @@ def build_command(deployment, session, abort_on_prompts=True):
     command += deployment.task.name
     if task_args:
         key_value_strings = []
-        for key in task_args:
+        for key_ in task_args:
+            if isinstance(key_, tuple):
+                key = key_[0]
+            else:
+                key = key_
+
+            if key in configs:
+                value = unicode(configs[key].get_value())
+            elif key in arg_values:
+                value = unicode(arg_values[key])
+            else:
+                continue
+
             cleaned_key = clean_arg_key_string(key)
-            value = clean_value_string(unicode(configs[key].get_value()))
+            value = clean_value_string(value)
             key_value_strings.append('{}="{}"'.format(cleaned_key, value))
 
-        command += ':'
-        command += ','.join(key_value_strings)
+        if key_value_strings:
+            command += ':'
+            command += ','.join(key_value_strings)
 
     if normal_task_configs:
         command += ' --set '
