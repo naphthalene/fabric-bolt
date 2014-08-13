@@ -5,6 +5,9 @@ $(function(){
 
     socket.on('connect', function () {
       socket.emit('join', deployment_id);
+      if(data.status == 'running' && typeof(deployment_text) != "undefined"){
+        $('#deployment_output pre').append(deployment_text).scrollTop($('#deployment_output pre')[0].scrollHeight);
+      }
     });
 
     socket.on('output', function (data) {
@@ -45,6 +48,20 @@ $(function(){
         'type' : 'abort',
         'pk' : deployment_id
       });
+    });
+
+    $("#deployment_maximize").click(function(){
+
+      var clone = $('#deployment_well').clone().addClass('active');
+      var parent = $('#deployment_well').parent();
+      var pos = $('#deployment_well').position();
+
+      $('body').append(clone);
+      clone.focus()
+
+      clone.css({'position' : 'absolute', left: pos.left + 'px', top: pos.top + 'px'}).animate({
+        width: '100%', height : '100%', top: 0, left: 0
+      },300);
     });
 
   }else{

@@ -55,7 +55,7 @@
             </div>
         </div>
     </div>
-    <div class="well">
+    <div id="deployment_well" class="well">
         {% block output %}
             {% if object.in_progress %}
                 <iframe src="{% url 'projects_deployment_output' object.pk %}" id="deployment_output"></iframe>
@@ -70,6 +70,9 @@
         <script>
             var deployment_in_progress = {% if object.in_progress %}true{% else %}false{% endif %};
             var deployment_id = {{ object.pk }};
+          {% if object.output %}
+            var deployment_text = {{ object.output }};
+          {% endif %}
          </script>
         {% block deployment_scripts %}
             <script src="{% static 'projects/js/deployment.js' %}"></script>

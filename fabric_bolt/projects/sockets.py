@@ -58,10 +58,12 @@ class DeployNamespace(BaseNamespace, RoomsMixin, BroadcastMixin):
         return True
 
     def kill_process(self):
-        os.kill(self.process.pid, signal.SIGTERM)
+        os.kill(self.deployment.pid, signal.SIGTERM)
 
+        self.broadcast_event('output', {'status': 'running', 'lines': '!!! Aborting... !!!'})
         self.broadcast_event('output', {'status': 'aborted'})
 
+        self.deployment.pid = None
         self.deployment.status = self.deployment.ABORTED
         self.deployment.save()
 
@@ -77,11 +79,15 @@ class DeployNamespace(BaseNamespace, RoomsMixin, BroadcastMixin):
             shell=True
         )
 
+        self.deployment.pid = self.process.pid
+        self.deployment.save()
+
         fd = self.process.stdout.fileno()
         fl = fcntl.fcntl(fd, fcntl.F_GETFL)
         fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
 
         self.all_output = ''
+        line_count = 0
         while True:
             try:
                 nextline = self.process.stdout.read()
@@ -92,9 +98,13 @@ class DeployNamespace(BaseNamespace, RoomsMixin, BroadcastMixin):
                 break
 
             self.all_output += nextline
+            line_count += 1
 
             if nextline:
                 self.broadcast_event('output', {'status': 'running', 'lines': str(nextline)})
+                if line_count > 10:
+                    self.deployment.output = self.all_output
+                    self.deployment.save()
             time.sleep(0.00001)
 
             sys.stdout.flush()
@@ -103,6 +113,7 @@ class DeployNamespace(BaseNamespace, RoomsMixin, BroadcastMixin):
             self.deployment.status = self.deployment.SUCCESS if self.process.returncode == 0 else self.deployment.FAILED
 
         self.deployment.output = self.all_output
+        self.deployment.pid = None
         self.deployment.save()
 
         self.broadcast_event('output', {'status': self.deployment.status})

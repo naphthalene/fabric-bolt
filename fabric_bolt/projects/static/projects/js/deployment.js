@@ -19,7 +19,6 @@ $(function(){
             }
         }, 100);
 
-
     }else{
         $('#deployment_output pre').scrollTop($('#deployment_output pre')[0].scrollHeight);
     }

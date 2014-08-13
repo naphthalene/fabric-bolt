@@ -261,6 +261,7 @@ class Deployment(TrackingFields):
     status = models.CharField(choices=STATUS, max_length=10, default=PENDING)
     output = models.TextField(null=True, blank=True)
     task = models.ForeignKey('projects.Task')
+    pid = models.CharField(max_length=6, null=True)
     configuration = models.TextField(null=True, blank=True)
 
     # Managers
