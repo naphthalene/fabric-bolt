@@ -50,7 +50,6 @@ class DeployNamespace(BaseNamespace, RoomsMixin, BroadcastMixin):
                 return self.kill_process()
                 return True
             except Exception as e:
-                print "Failed to abort... {}".format(e)
                 return False
 
     def recv_disconnect(self):
@@ -59,7 +58,6 @@ class DeployNamespace(BaseNamespace, RoomsMixin, BroadcastMixin):
         return True
 
     def kill_process(self):
-        print "Killing {}".format(self.process.pid)
         os.kill(self.process.pid, signal.SIGTERM)
 
         self.broadcast_event('output', {'status': 'aborted'})
@@ -96,13 +94,11 @@ class DeployNamespace(BaseNamespace, RoomsMixin, BroadcastMixin):
             self.all_output += nextline
 
             if nextline:
-                print nextline
                 self.broadcast_event('output', {'status': 'running', 'lines': str(nextline)})
             time.sleep(0.00001)
 
             sys.stdout.flush()
 
-        print "Current status, about to exit: {}".format(self.deployment.status)
         if self.deployment.status != self.deployment.ABORTED:
             self.deployment.status = self.deployment.SUCCESS if self.process.returncode == 0 else self.deployment.FAILED
 
