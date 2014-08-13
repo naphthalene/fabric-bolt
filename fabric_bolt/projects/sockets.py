@@ -31,7 +31,7 @@ class DeployNamespace(BaseNamespace, RoomsMixin, BroadcastMixin):
         self.deployment = Deployment.objects.get(pk=deployment_id)
         if self.deployment.status == self.deployment.PENDING:
             self.update_thread = Thread(target=self.output_stream_generator, args=(self,))
-            self.update_thread.daemon = True
+            # self.update_thread.daemon = True
             self.deployment.status = self.deployment.RUNNING
             self.deployment.save()
             self.update_thread.start()
@@ -46,11 +46,7 @@ class DeployNamespace(BaseNamespace, RoomsMixin, BroadcastMixin):
             except:
                 return False
         elif event['type'] == 'abort':
-            try:
-                return self.kill_process()
-                return True
-            except Exception as e:
-                return False
+            self.kill_process()
 
     def recv_disconnect(self):
         self.log('Disconnected')
@@ -58,15 +54,20 @@ class DeployNamespace(BaseNamespace, RoomsMixin, BroadcastMixin):
         return True
 
     def kill_process(self):
-        os.kill(self.deployment.pid, signal.SIGTERM)
+        try:
+            print "Deployment pid is {}".format(self.deployment.pid)
+            os.kill(int(self.deployment.pid), signal.SIGTERM)
 
-        self.broadcast_event('output', {'status': 'running', 'lines': '!!! Aborting... !!!'})
-        self.broadcast_event('output', {'status': 'aborted'})
+            self.broadcast_event('output', {'status': 'running', 'lines': '!!! Aborting... !!!'})
+            self.broadcast_event('output', {'status': 'aborted'})
 
-        self.deployment.pid = None
-        self.deployment.status = self.deployment.ABORTED
-        self.deployment.save()
-
+            self.deployment.pid = None
+            self.deployment.status = self.deployment.ABORTED
+            self.deployment.save()
+            return True
+        except Exception as e:
+            print("Failed to kill... {}".format(e))
+            return False
 
     def output_stream_generator(self, *args, **kwargs):
         cmd = build_command(self.deployment, self.request.session, False),

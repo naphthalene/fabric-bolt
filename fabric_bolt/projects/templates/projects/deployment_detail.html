@@ -65,15 +65,18 @@
         {% endblock %}
     </div>
 
+    {% if object.output %}
+    <div id="deployment_text" style="display: none;">
+      {{ object.output }}
+    </div>
+    {% endif %}
 
     {% addtoblock "js" %}
         <script>
             var deployment_in_progress = {% if object.in_progress %}true{% else %}false{% endif %};
             var deployment_id = {{ object.pk }};
-          {% if object.output %}
-            var deployment_text = {{ object.output }};
-          {% endif %}
-         </script>
+        </script>
+        <script src= "{% static 'projects/js/maximize_output.js' %}"></script>
         {% block deployment_scripts %}
             <script src="{% static 'projects/js/deployment.js' %}"></script>
         {% endblock %}
