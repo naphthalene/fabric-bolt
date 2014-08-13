@@ -1,8 +1,5 @@
-
-
-
 $(function(){
-    if(deployment_pending){
+    if(deployment_in_progress){
 
         var scroll_iframe_ticker = setInterval(function(){
             var $contents = $('#deployment_output').contents();

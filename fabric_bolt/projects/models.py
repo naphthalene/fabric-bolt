@@ -271,6 +271,10 @@ class Deployment(TrackingFields):
     class Meta:
         ordering = ['-date_created']
 
+    @property
+    def in_progress(self):
+        return self.status in [self.PENDING, self.RUNNING]
+
     def __unicode__(self):
         return u'Deployment at {} status: {}'.format(self.date_created, self.get_status_display())
 

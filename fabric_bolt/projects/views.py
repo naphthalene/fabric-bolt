@@ -315,6 +315,19 @@ class DeploymentDetail(DetailView):
         else:
             return ['projects/deployment_detail.html']
 
+# class DeploymentAbort(RedirectView):
+#     """
+#     Abort a deployment
+#     """
+#     permanent = False
+
+#     def get(self, request, *args, **kwargs):
+#         self.deployment_id = int(kwargs.get('pk'))
+#         self.deployment = get_object_or_404(models.Stage, pk=deployment_id)
+
+#         ## TODO lookup the 
+#         return super(DeploymentAbort, self).get(request, *args, **kwargs)
+
 
 class DeploymentOutputStream(View):
     """
