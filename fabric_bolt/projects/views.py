@@ -226,8 +226,7 @@ class DeploymentCreate(CreateView):
             messages.error(self.request, '"{}" is not a valid task.'. format(self.kwargs['task_name']))
             return HttpResponseRedirect(reverse('projects_stage_view', kwargs={'project_id': self.stage.project_id, 'pk': self.stage.pk }))
 
-        self.task_name = task_details
-        self.task_description = "Not available at this time (for speed)"
+        self.task_name, self.task_description, self.task_args = task_details
 
         return super(DeploymentCreate, self).dispatch(request, *args, **kwargs)
 
@@ -260,6 +259,22 @@ class DeploymentCreate(CreateView):
                 if config.task_argument:
                     used_arg_names.append(config.key)
                     field.label = 'Argument value for ' + config.key
+
+            form.fields[str_config_key] = field
+            form.helper.layout.fields.insert(len(form.helper.layout.fields)-1, str_config_key)
+
+        for arg in self.task_args:
+            if isinstance(arg, tuple):
+                name, default = arg
+            else:
+                name, default = arg, None
+
+            if name in used_arg_names:
+                continue
+
+            str_config_key = 'configuration_value_for_{}'.format(name)
+
+            field = CharField(label='Argument value for ' + name, initial=default)
 
             form.fields[str_config_key] = field
             form.helper.layout.fields.insert(len(form.helper.layout.fields)-1, str_config_key)
@@ -447,11 +462,12 @@ class ProjectStageTasksAjax(DetailView):
         context = super(ProjectStageTasksAjax, self).get_context_data(**kwargs)
 
         all_tasks = get_fabric_tasks(self.object.project)
+        task_names = [x[0] for x in all_tasks]
 
-        context['all_tasks'] = all_tasks
+        context['all_tasks'] = task_names
         context['frequent_tasks_run'] = models.Task.objects.filter(
-            name__in=all_tasks
-        ).order_by('-times_used')[:3]
+            name__in=task_names
+        ).order_by('-times_used')[:5]
 
         return context
 

@@ -205,6 +205,8 @@ def build_command(deployment, session, abort_on_prompts=True):
 
     task_details = get_task_details(deployment.stage.project, deployment.task.name)
 
+    task_args = list(set(task_args + task_details[2]))
+
     roles = deployment.stage.roles.values_list('name', flat=True)
     if roles:
         command += (' t:' + ','.join(roles) + ' ')
@@ -251,4 +253,5 @@ def build_command(deployment, session, abort_on_prompts=True):
     fabfile_path = get_fabfile_path(deployment.stage.project)
     command += ' --fabfile={}'.format(fabfile_path)
 
+    print command
     return command
