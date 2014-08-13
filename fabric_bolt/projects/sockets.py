@@ -15,43 +15,47 @@ from fabric_bolt.projects.models import Deployment
 
 
 @namespace('/deployment')
-class ChatNamespace(BaseNamespace, RoomsMixin, BroadcastMixin):
+class DeployNamespace(BaseNamespace, RoomsMixin, BroadcastMixin):
 
     def initialize(self):
         self.logger = logging.getLogger("socketio.deployment")
         self.log("Socketio session started")
-        
+        self.threads = {}
+
     def log(self, message):
         self.logger.info("[{0}] {1}".format(self.socket.sessid, message))
-    
+
     def on_join(self, deployment_id):
         self.deployment = Deployment.objects.get(pk=deployment_id)
-        if self.deployment.status != self.deployment.PENDING:
-            return True
-
-        update_thread = Thread(target=self.output_stream_generator, args=(self,))
-        update_thread.daemon = True
-        update_thread.start()
+        if self.deployment.status == self.deployment.PENDING:
+            update_thread = Thread(target=self.output_stream_generator, args=(self,))
+            update_thread.daemon = True
+            update_thread.start()
+            self.threads[deployment_id] = update_thread
 
         return True
 
     def on_input(self, text):
-        self.process.stdin.write(text + '\n')
-
-        return True
+        try:
+            self.process.stdin.write(text + '\n')
+            return True
+        except:
+            return False
 
     def recv_disconnect(self):
-        # Remove nickname from the list.
         self.log('Disconnected')
         self.disconnect(silent=True)
         return True
 
     def output_stream_generator(self, *args, **kwargs):
+        cmd = build_command(self.deployment, self.request.session, False),
+
         self.process = subprocess.Popen(
-            build_command(self.deployment, self.request.session, False),
+            cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            stdin=subprocess.PIPE
+            stdin=subprocess.PIPE,
+            shell=True
         )
 
         fd = self.process.stdout.fileno()
@@ -82,6 +86,33 @@ class ChatNamespace(BaseNamespace, RoomsMixin, BroadcastMixin):
         self.deployment.output = all_output
         self.deployment.save()
 
+        print "Broadcasting status {}".format(self.deployment.status)
         self.broadcast_event('output', {'status': self.deployment.status})
 
-        self.disconnect()
+        # self.disconnect()
+
+        # all_output = ''
+        # while self.process.poll() is None:
+        #     try:
+        #         nextline = self.process.stdout.readline()
+        #         if nextline == '':
+        #             break
+
+        #         self.broadcast_event('output', {'status': 'pending', 'lines': str(nextline)})
+        #         all_output += str(nextline)
+        #         sys.stdout.flush()
+
+        #     except IOError:
+        #         print "Got an IO error?"
+        #         break
+
+        # print "Exited with: {}".format(self.process.returncode)
+        # self.deployment.status = self.deployment.SUCCESS if self.process.returncode == 0 else self.deployment.FAILED
+
+        # self.deployment.output = all_output
+        # self.deployment.save()
+
+        # print "Broadcasting status {}".format(self.deployment.status)
+        # self.broadcast_event('output', {'status': self.deployment.status})
+
+        # self.disconnect()

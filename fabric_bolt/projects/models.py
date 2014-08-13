@@ -246,10 +246,14 @@ class Deployment(TrackingFields):
     """
 
     PENDING = 'pending'
-    FAILED = 'failed'
+    RUNNING = 'running'
+    FAILED  = 'failed'
     SUCCESS = 'success'
+    ABORTED = 'aborted'
 
-    STATUS = [(PENDING, 'Pending'), (FAILED, 'Failed'), (SUCCESS, 'Success')]
+    STATUS = [(PENDING, 'Pending'), (FAILED, 'Failed'),
+              (SUCCESS, 'Success'), (ABORTED, 'Aborted'),
+              (RUNNING, 'Running')]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     stage = models.ForeignKey(Stage)

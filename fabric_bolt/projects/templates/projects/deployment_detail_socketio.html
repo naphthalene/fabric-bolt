@@ -3,6 +3,7 @@
 
 {% block output %}
     {% if object.status == object.PENDING %}
+        <a href="{% url 'projects_deployment_abort' object.pk %}" class="btn btn-danger">Abort</a>
         <div id="deployment_output"><pre class="prettyprint"></pre></div>
         <input type="text" class="form-control" id="deployment_input">
     {% else %}

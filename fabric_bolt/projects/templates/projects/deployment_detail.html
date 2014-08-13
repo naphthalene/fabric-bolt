@@ -38,7 +38,7 @@
         <div class="col-md-6">
             <div class="well">
                 <fieldset style="text-align: center;margin-bottom:10px;" id="status_section">
-                    {% if object.status == object.PENDING %}
+                    {% if object.status == object.RUNNING %}
                         <legend>Status: Working</legend>
                         <i class="glyphicon glyphicon-time text-info" style="font-size:90px;"></i>
                     {% elif object.status == object.SUCCESS %}
