@@ -13,7 +13,6 @@ $(function(){
         $('#deployment_output pre').append(data.lines).scrollTop($('#deployment_output pre')[0].scrollHeight);
       }else{
         socket.disconnect();
-        $('#deployment_maximize').hide();
         $('#deployment_abort').hide();
         if(data.status == 'failed'){
           $('#status_section legend').html('Status: Failed!');

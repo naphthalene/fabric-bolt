@@ -2,7 +2,6 @@
 {% load staticfiles %}
 
 {% block output %}
-        <a id="deployment_maximize" class="btn btn-primary">Maximize</a>
     {% if object.in_progress %}
         <a id="deployment_abort" class="btn btn-danger">Abort</a>
         <div id="deployment_output"><pre class="prettyprint"></pre></div>
