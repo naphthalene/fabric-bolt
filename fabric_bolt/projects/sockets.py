@@ -41,7 +41,7 @@ class DeployNamespace(BaseNamespace, RoomsMixin, BroadcastMixin):
     def on_input(self, event):
         if event['type'] == 'text':
             try:
-                self.process.stdin.write(text + '\n')
+                self.process.stdin.write(event['text'] + '\n')
                 return True
             except:
                 return False

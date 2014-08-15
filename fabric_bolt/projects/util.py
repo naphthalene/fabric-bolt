@@ -96,7 +96,7 @@ def parse_task_details(name, task_output):
                 arguments.append(m.group(1))
     return name, docstring, arguments
 
-def get_fabric_tasks(project):
+def get_fabric_tasks(project, task_regex=None):
     """
     Generate a list of fabric tasks that are available
     """
@@ -116,10 +116,12 @@ def get_fabric_tasks(project):
         tasks = []
         for line in lines:
             name = line.strip()
+            if task_regex:
+                if not re.match(task_regex, name):
+                    continue
             o = subprocess.check_output(
                 ['fab', '--display={}'.format(name), '--fabfile={}'.format(fabfile_path)]
             )
-
             tasks.append(parse_task_details(name, o))
 
         cache.set(cache_key, tasks, settings.FABRIC_TASK_CACHE_TIMEOUT)

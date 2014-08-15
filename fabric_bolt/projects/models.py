@@ -6,6 +6,7 @@ from django.conf import settings
 from fabric_bolt.core.mixins.models import TrackingFields
 from fabric_bolt.projects.model_managers import ActiveManager, ActiveDeploymentManager
 
+from re import compile as compile_regex
 
 class ProjectType(TrackingFields):
     name = models.CharField(max_length=255)
@@ -39,7 +40,7 @@ class Project(TrackingFields):
     def displayed_tasks(self, all_tasks):
         if not self.task_regex:
             return all_tasks
-        task_re = re.compile(self.task_regex)
+        task_re = compile_regex(self.task_regex)
         return filter(lambda t: task_re.match(t), all_tasks)
 
     def project_configurations(self):

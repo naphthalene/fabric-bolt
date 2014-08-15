@@ -461,13 +461,13 @@ class ProjectStageTasksAjax(DetailView):
     def get_context_data(self, **kwargs):
         context = super(ProjectStageTasksAjax, self).get_context_data(**kwargs)
 
-        all_tasks = get_fabric_tasks(self.object.project)
+        all_tasks = get_fabric_tasks(self.object.project,
+                                     self.object.project.task_regex)
         task_names = [x[0] for x in all_tasks]
 
-        displayed_tasks = self.object.project.displayed_tasks(task_names)
-        context['all_tasks'] = displayed_tasks
+        context['all_tasks'] = task_names
         context['frequent_tasks_run'] = models.Task.objects.filter(
-            name__in=displayed_tasks
+            name__in=task_names
         ).order_by('-times_used')[:5]
 
         return context
