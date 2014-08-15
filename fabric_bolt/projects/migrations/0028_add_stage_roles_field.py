@@ -8,16 +8,19 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding field 'Deployment.user'
-        db.add_column(u'projects_stage', 'roles',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=1, to=orm['roles.Role']),
-                      keep_default=False)
-
+        # Adding M2M table for field roles on 'Stage'
+        m2m_table_name = db.shorten_name(u'projects_stage_roles')
+        db.create_table(m2m_table_name, (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('stage', models.ForeignKey(orm[u'projects.stage'], null=False)),
+            ('role', models.ForeignKey(orm[u'roles.role'], null=False))
+        ))
+        db.create_unique(m2m_table_name, ['stage_id', 'role_id'])
 
 
     def backwards(self, orm):
-        # Deleting field 'Deployment.user'
-        db.delete_column(u'projects_stage', 'roles')
+        # Removing M2M table for field roles on 'Stage'
+        db.delete_table(db.shorten_name(u'projects_stage_roles'))
 
 
     models = {
