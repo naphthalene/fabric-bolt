@@ -28,11 +28,19 @@ class Project(TrackingFields):
     repo_url = models.CharField(max_length=200, null=True, blank=True, help_text='Currently only git repos are supported.')
     fabfile_requirements = models.TextField(null=True, blank=True, help_text='Pip requirements to install for fabfile. '
                                                                              'Enter one requirement per line.')
+    task_regex = models.CharField(max_length=1000, null=True, blank=True,
+                                  help_text='Regex to select tasks to display for this project')
 
     # Managers
     objects = models.Manager()
     active_records = ActiveManager()
     # End Managers
+
+    def displayed_tasks(self, all_tasks):
+        if not self.task_regex:
+            return all_tasks
+        task_re = re.compile(self.task_regex)
+        return filter(lambda t: task_re.match(t), all_tasks)
 
     def project_configurations(self):
         return Configuration.objects.filter(project_id=self.pk, stage__isnull=True)

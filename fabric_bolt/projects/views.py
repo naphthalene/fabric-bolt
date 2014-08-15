@@ -464,9 +464,10 @@ class ProjectStageTasksAjax(DetailView):
         all_tasks = get_fabric_tasks(self.object.project)
         task_names = [x[0] for x in all_tasks]
 
-        context['all_tasks'] = task_names
+        displayed_tasks = self.object.project.displayed_tasks(task_names)
+        context['all_tasks'] = displayed_tasks
         context['frequent_tasks_run'] = models.Task.objects.filter(
-            name__in=task_names
+            name__in=displayed_tasks
         ).order_by('-times_used')[:5]
 
         return context
