@@ -99,6 +99,8 @@ class ProjectDetail(DetailView):
         RequestConfig(self.request).configure(role_table)
         context['roles'] = role_table
 
+        context['available_roles'] = Role.objects.exclude(name__in=[role.name for role in project_roles]).all()
+
         stage_table = tables.StageTable(stages, prefix='stage_')
         RequestConfig(self.request).configure(stage_table)
         context['stage_table'] = stage_table
