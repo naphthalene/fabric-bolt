@@ -92,6 +92,13 @@ class ProjectDetail(DetailView):
         stages = self.object.get_stages().annotate(deployment_count=Count('deployment'))
         context['stages'] = stages
 
+        # Roles Table (Project->Role Through table)
+        project_roles = self.object.roles.all()
+
+        role_table = tables.ProjectRoleTable(project_roles, project_id=self.object.pk)
+        RequestConfig(self.request).configure(role_table)
+        context['roles'] = role_table
+
         stage_table = tables.StageTable(stages, prefix='stage_')
         RequestConfig(self.request).configure(stage_table)
         context['stage_table'] = stage_table
@@ -188,7 +195,6 @@ class ProjectConfigurationDelete(DeleteView):
 
     def get_success_url(self):
         """Get the url depending on what type of configuration I deleted."""
-        
         if self.stage_id:
             url = reverse('projects_stage_view', args=(self.project_id, self.stage_id))
         else:
@@ -529,6 +535,25 @@ class ProjectStageMapRole(RedirectView):
     def get_redirect_url(self, **kwargs):
         return reverse('projects_stage_view', args=(self.project_id, self.stage_id,))
 
+class ProjectMapRole(RedirectView):
+    """
+    Map a Project to a Role
+    """
+    group_required = ['Admin',]
+    permanent = False
+
+    def get(self, request, *args, **kwargs):
+        self.project_id = kwargs.get('pk')
+        role_name = kwargs.get('role_name')
+
+        project = models.Project.objects.get(pk=self.project_id)
+        project.roles.add(Role.objects.get(name=role_name))
+
+        return super(ProjectMapRole, self).get(request, *args, **kwargs)
+
+    def get_redirect_url(self, **kwargs):
+        return reverse('projects_project_view', args=(self.project_id,))
+
 
 class ProjectStageUnmapHost(RedirectView):
     """
@@ -569,6 +594,26 @@ class ProjectStageUnmapRole(RedirectView):
 
     def get_redirect_url(self, **kwargs):
         return reverse('projects_stage_view', args=(self.stage.project.pk, self.stage_id,))
+
+class ProjectUnmapRole(RedirectView):
+    """
+    Unmap a Project from a Role (deletes the Project->Role through table record)
+    """
+    group_required = ['Admin', ]
+    permanent = False
+
+    def get(self, request, *args, **kwargs):
+        self.project_id = kwargs.get('pk')
+        role_name = kwargs.get('role_name')
+
+        self.project = models.Project.objects.get(pk=self.project_id)
+        role = Role.objects.get(name=role_name)
+        self.project.roles.remove(role)
+
+        return super(ProjectUnmapRole, self).get(request, *args, **kwargs)
+
+    def get_redirect_url(self, **kwargs):
+        return reverse('projects_project_view', args=(self.project.pk,))
 
 
 class ProjectInvalidateCache(RedirectView):

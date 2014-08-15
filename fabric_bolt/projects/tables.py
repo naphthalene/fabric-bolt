@@ -175,3 +175,30 @@ class StageRoleTable(PaginateTable):
             'name',
             'actions'
         )
+
+
+class ProjectRoleTable(PaginateTable):
+    """This table lists the Project->Role through table records
+
+    Also provides actions to view and un-map the role to the project
+    """
+
+    def __init__(self, *args, **kwargs):
+        project_id = kwargs.pop('project_id')
+
+        self.base_columns['actions'] = ActionsColumn([
+            {'title': '<i class="glyphicon glyphicon-file"></i>', 'url': 'roles_role_detail', 'args': [tables.A('pk')],
+             'attrs':{'data-toggle': 'tooltip', 'title': 'View Role', 'data-delay': '{ "show": 300, "hide": 0 }'}},
+            {'title': '<i class="glyphicon glyphicon-trash"></i>', 'url': 'projects_project_unmaprole', 'args': [project_id, tables.A('pk'),],
+             'attrs':{'data-toggle': 'tooltip', 'title': 'Remove Role from Project', 'data-delay': '{ "show": 300, "hide": 0 }'}},
+        ], delimiter='&#160;&#160;&#160;')
+
+        super(ProjectRoleTable, self).__init__(*args, **kwargs)
+
+    class Meta:
+        model = Role
+        attrs = {"class": "table table-striped"}
+        sequence = fields = (
+            'name',
+            'actions'
+        )

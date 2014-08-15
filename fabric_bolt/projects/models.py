@@ -32,6 +32,8 @@ class Project(TrackingFields):
     task_regex = models.CharField(max_length=1000, null=True, blank=True,
                                   help_text='Regex to select tasks to display for this project')
 
+    roles = models.ManyToManyField('roles.Role')
+
     # Managers
     objects = models.Manager()
     active_records = ActiveManager()
