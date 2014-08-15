@@ -274,15 +274,18 @@ class DeploymentCreate(CreateView):
         for arg in self.task_args:
             if isinstance(arg, tuple):
                 name, default = arg
+                required = False
             else:
                 name, default = arg, None
+                required = True
 
             if name in used_arg_names:
                 continue
 
             str_config_key = 'configuration_value_for_{}'.format(name)
 
-            field = CharField(label='Argument value for ' + name, initial=default)
+            field = CharField(label='Argument value for ' + name, initial=default,
+                              required=required)
 
             form.fields[str_config_key] = field
             form.helper.layout.fields.insert(len(form.helper.layout.fields)-1, str_config_key)
