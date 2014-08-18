@@ -91,7 +91,7 @@ def parse_task_details(name, task_output):
                 else:
                     # found an argument with some other default value.
                     # all fab arguments are translated to strings, so this doesnt make sense. Ignore the default.
-                    arguments.append(m.group(1))
+                    arguments.append((m.group(1), ''))
             else:
                 arguments.append(m.group(1))
     return name, docstring, arguments
