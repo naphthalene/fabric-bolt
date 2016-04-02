@@ -1,4 +1,3 @@
-
 from re import match
 from thread import start_new_thread
 from time import sleep
@@ -12,6 +11,8 @@ from django.core.management.commands.runserver import naiveip_re, DEFAULT_PORT
 from django.utils.autoreload import code_changed, restart_with_reloader
 from socketio.server import SocketIOServer
 
+import logging
+logging.basicConfig()
 
 RELOAD = False
 
@@ -51,7 +52,8 @@ class Command(BaseCommand):
             print "SocketIOServer running on %s:%s" % bind
             print
             handler = self.get_handler(*args, **options)
-            server = SocketIOServer(bind, handler, resource="socket.io", policy_server=True)
+            server = SocketIOServer(bind, handler, resource="socket.io",
+                                    policy_server=True)
             server.serve_forever()
         except KeyboardInterrupt:
             if RELOAD:

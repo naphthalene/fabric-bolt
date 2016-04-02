@@ -1,10 +1,7 @@
-
-
-
 $(function(){
     if(deployment_pending){
 
-        var socket = io.connect("/deployment");
+        var socket = io.connect("/deployment", {resource: "socket.io"});
 
         socket.on('connect', function () {
             socket.emit('join', deployment_id);
@@ -12,18 +9,26 @@ $(function(){
 
         socket.on('output', function (data) {
             if(data.status == 'pending'){
-                $('#deployment_output .output').append(data.lines).scrollTop($('#deployment_output .output')[0].scrollHeight);
+                $('#deployment_output .output').append(data.lines).scrollTop(
+                  $('#deployment_output .output')[0].scrollHeight);
             }else{
                 socket.disconnect();
                 if(data.status == 'failed'){
                     $('#status_section legend').html('Status: Failed!');
-                    $('#status_section .glyphicon').attr('class', '').addClass('glyphicon').addClass('glyphicon-warning-sign').addClass('text-danger');
+                    $('#status_section .glyphicon')
+                      .attr('class', '')
+                      .addClass('glyphicon')
+                      .addClass('glyphicon-warning-sign')
+                      .addClass('text-danger');
                 }else if(data.status == 'success') {
                     $('#status_section legend').html('Status: Success!');
-                    $('#status_section .glyphicon').attr('class', '').addClass('glyphicon').addClass('glyphicon-ok').addClass('text-success');
+                    $('#status_section .glyphicon')
+                      .attr('class', '')
+                      .addClass('glyphicon')
+                      .addClass('glyphicon-ok')
+                      .addClass('text-success');
                 }
             }
-
         });
 
         $('#deployment_input').keyup(function(e){
@@ -35,8 +40,8 @@ $(function(){
             }
         });
 
-
     }else{
-        $('#deployment_output .output').scrollTop($('#deployment_output .output')[0].scrollHeight);
+        $('#deployment_output .output').scrollTop(
+          $('#deployment_output .output')[0].scrollHeight);
     }
 });
