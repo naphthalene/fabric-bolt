@@ -30,7 +30,8 @@ class ChatNamespace(BaseNamespace, RoomsMixin, BroadcastMixin):
         if self.deployment.status != self.deployment.PENDING:
             return True
 
-        update_thread = Thread(target=self.output_stream_generator, args=(self,))
+        update_thread = Thread(target=self.output_stream_generator,
+                               args=(self,))
         update_thread.daemon = True
         update_thread.start()
 
@@ -51,7 +52,9 @@ class ChatNamespace(BaseNamespace, RoomsMixin, BroadcastMixin):
         from fabric_bolt.task_runners import backend
 
         self.process = subprocess.Popen(
-            backend.build_command(self.deployment.stage.project, self.deployment, self.request.session, False),
+            backend.build_command(self.deployment.stage.project,
+                                  self.deployment,
+                                  self.request.session, False),
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             stdin=subprocess.PIPE,
@@ -78,12 +81,17 @@ class ChatNamespace(BaseNamespace, RoomsMixin, BroadcastMixin):
             all_output += nextline
 
             if nextline:
-                self.broadcast_event('output', {'status': 'pending', 'lines': str(nextline)})
+                self.broadcast_event('output', {
+                    'status': 'pending',
+                    'lines': str(nextline)
+                })
             time.sleep(0.00001)
 
             sys.stdout.flush()
 
-        self.deployment.status = self.deployment.SUCCESS if self.process.returncode == 0 else self.deployment.FAILED
+        self.deployment.status = self.deployment.SUCCESS if \
+                                 self.process.returncode == 0 else \
+                                 self.deployment.FAILED
 
         self.deployment.output = all_output
         self.deployment.save()
