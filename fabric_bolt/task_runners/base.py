@@ -144,7 +144,7 @@ class BaseTaskRunnerBackend(object):
 
             if activate_loc:
                 output = self.check_output(
-                    'source {};fab --list --list-format=short --fabfile={}'.format(activate_loc, fabfile_path),
+                    '. {};fab --list --list-format=short --fabfile={}'.format(activate_loc, fabfile_path),
                     shell=True
                 )
             else:
@@ -159,7 +159,7 @@ class BaseTaskRunnerBackend(object):
                 name = line.strip()
                 if activate_loc:
                     o = self.check_output(
-                        'source {};fab --display={} --fabfile={}'.format(activate_loc, name, fabfile_path),
+                        '. {};fab --display={} --fabfile={}'.format(activate_loc, name, fabfile_path),
                         shell=True
                     )
                 else:
@@ -290,6 +290,6 @@ class BaseTaskRunnerBackend(object):
         command += ' --fabfile={}'.format(fabfile_path)
 
         if active_loc:
-            return 'source {};'.format(active_loc) + ' ' + command
+            return '. {};'.format(active_loc) + ' ' + command
         else:
             return command
