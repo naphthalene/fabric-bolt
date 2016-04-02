@@ -1,7 +1,7 @@
 $(function(){
     if(deployment_pending){
 
-        var socket = io.connect("/deployment", {resource: "socket.io"});
+        var socket = io.connect("/deployment");
 
         socket.on('connect', function () {
             socket.emit('join', deployment_id);
