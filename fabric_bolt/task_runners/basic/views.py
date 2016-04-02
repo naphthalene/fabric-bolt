@@ -29,7 +29,7 @@ class DeploymentOutputStream(StageSubPageMixin, View):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 shell=True,
-                executable=getattr(settings, 'SHELL', '/bin/bash'),
+                executable=getattr(settings, 'SHELL', '/bin/sh'),
             )
 
             all_output = ''

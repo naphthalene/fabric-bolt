@@ -35,7 +35,7 @@ class BaseTaskRunnerBackend(object):
     def check_output(self, command, shell=False):
         executable = None
         if shell:
-            executable = getattr(settings, 'SHELL', '/bin/bash')
+            executable = getattr(settings, 'SHELL', '/bin/sh')
         return subprocess.check_output(command, shell=shell, executable=executable)
 
     def check_output_with_ssh_key(self, command):
@@ -75,7 +75,7 @@ class BaseTaskRunnerBackend(object):
         pip_installs = ' '.join(project.fabfile_requirements.splitlines())
 
         self.check_output_with_ssh_key(
-            'source {} && cd {};pip install {}'.format(activate_loc, repo_dir, pip_installs)
+            '. {} && cd {};pip install {}'.format(activate_loc, repo_dir, pip_installs)
         )
 
     def get_fabfile_path(self, project):
