@@ -56,7 +56,7 @@ class ChatNamespace(BaseNamespace, RoomsMixin, BroadcastMixin):
             stderr=subprocess.STDOUT,
             stdin=subprocess.PIPE,
             shell=True,
-            executable=getattr(settings, 'SHELL', '/bin/sh'),
+            executable=getattr(settings, 'SHELL', '/bin/bash'),
             close_fds=True,
         )
 

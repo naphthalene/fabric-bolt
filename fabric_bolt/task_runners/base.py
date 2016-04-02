@@ -35,7 +35,7 @@ class BaseTaskRunnerBackend(object):
     def check_output(self, command, shell=False):
         executable = None
         if shell:
-            executable = getattr(settings, 'SHELL', '/bin/sh')
+            executable = getattr(settings, 'SHELL', '/bin/bash')
         return subprocess.check_output(command, shell=shell, executable=executable)
 
     def check_output_with_ssh_key(self, command):
